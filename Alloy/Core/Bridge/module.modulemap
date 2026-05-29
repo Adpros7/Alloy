@@ -1,0 +1,4 @@
+module AlloyEngine [system] {
+    umbrella header "AlloyEngine.h"
+    export *
+}

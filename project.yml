@@ -1,0 +1,90 @@
+name: Alloy
+options:
+  bundleIdPrefix: com.alloy
+  deploymentTarget:
+    macOS: "14.0"
+  defaultConfig: Debug
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    ALWAYS_SEARCH_USER_PATHS: NO
+
+targets:
+  Alloy:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+
+    sources:
+      - path: Alloy
+        excludes:
+          - "**/*.h"
+          - "**/*.modulemap"
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.alloy.editor
+        INFOPLIST_FILE: Alloy/App/Info.plist
+        PRODUCT_NAME: Alloy
+        SWIFT_OBJC_BRIDGING_HEADER: Alloy/Core/Bridge/AlloyEngine.h
+        # Link the Rust static library
+        OTHER_LDFLAGS:
+          - "-lalloy_text"
+          - "-liconv"
+          - "-lresolv"
+        # Library search paths — Debug uses unoptimized build, Release uses release
+        LIBRARY_SEARCH_PATHS[config=Debug]:
+          - "$(inherited)"
+          - "$(PROJECT_DIR)/alloy-engine/target/debug"
+        LIBRARY_SEARCH_PATHS[config=Release]:
+          - "$(inherited)"
+          - "$(PROJECT_DIR)/alloy-engine/target/release"
+        # Module map for the C bridge
+        SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/Alloy/Core/Bridge"
+        # Disable app sandbox — needed to spawn language servers / git / shell
+        CODE_SIGN_ENTITLEMENTS: Alloy/App/Alloy.entitlements
+
+    preBuildScripts:
+      - name: Build Rust Engine
+        shell: /bin/zsh
+        script: |
+          export PATH="$HOME/.cargo/bin:/opt/homebrew/bin:$PATH"
+          cd "$PROJECT_DIR/alloy-engine"
+          if [ "$CONFIGURATION" = "Release" ]; then
+            cargo build -p alloy-text --release
+          else
+            cargo build -p alloy-text
+          fi
+        basedOnDependencyAnalysis: false
+
+    scheme:
+      testTargets:
+        - AlloyTests
+      gatherCoverageData: true
+
+  AlloyTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: AlloyTests
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.alloy.editor.tests
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Alloy.app/Contents/MacOS/Alloy"
+
+    dependencies:
+      - target: Alloy

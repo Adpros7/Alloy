@@ -3,12 +3,12 @@ import PackageDescription
 
 // Alloy — native macOS code editor.
 //
-// We use SwiftPM (not an .xcodeproj) so the whole app builds from the command
-// line with only the Command Line Tools installed. The Rust engine is built
-// separately by build.sh into a static library that we link here.
+// Build sequence:
+//   1. cd alloy-engine && cargo build -p alloy-text   (or --release)
+//   2. swift build   (from repo root)
 //
-// NOTE: linker flags reference alloy-engine/target/release/liballoy_text.a — run
-// `./build.sh` (or `cargo build --release` in alloy-engine/) BEFORE `swift build`.
+// The Rust static library (liballoy_text.a) is linked via unsafeFlags below.
+// Debug builds link alloy-engine/target/debug/; swap to /release for production.
 
 let package = Package(
     name: "Alloy",
@@ -16,15 +16,20 @@ let package = Package(
         .macOS(.v14)
     ],
     targets: [
-        // The C ABI bridge to the Rust engine (headers only; symbols come from Rust).
+        // C ABI bridge: the header that cbindgen generates from the Rust crate.
+        // Symbols come from the Rust static lib at link time; this target just
+        // provides the Swift-importable header declarations.
         .target(
             name: "CAlloyEngine",
+            path: "Sources/CAlloyEngine",
             publicHeadersPath: "include"
         ),
 
-        // PTY spawn helper (forkpty/execvp) for the integrated terminal.
+        // PTY helper: a thin C shim around openpty/forkpty (not available directly
+        // in Swift). Lives alongside its header so the Swift target can import it.
         .target(
             name: "CPTY",
+            path: "Sources/CPTY",
             publicHeadersPath: "include"
         ),
 
@@ -32,14 +37,21 @@ let package = Package(
         .executableTarget(
             name: "Alloy",
             dependencies: ["CAlloyEngine", "CPTY"],
+            path: "Alloy",
+            exclude: [
+                "Core/Bridge",          // provided by CAlloyEngine target
+                "App/Info.plist",
+                "App/Alloy.entitlements",
+            ],
             resources: [
-                .process("Resources")
+                .copy("KeyBindings/DefaultKeyBindings.json"),
             ],
             linkerSettings: [
-                // Link the Rust engine static library.
                 .unsafeFlags([
-                    "-L", "alloy-engine/target/release",
+                    "-L", "alloy-engine/target/debug",
                     "-lalloy_text",
+                    "-liconv",
+                    "-lresolv",
                 ]),
                 .linkedFramework("AppKit"),
                 .linkedFramework("CoreText"),
@@ -48,7 +60,5 @@ let package = Package(
             ]
         ),
     ],
-    // Swift 5 language mode keeps the large AppKit codebase free of Swift 6
-    // strict-concurrency churn for now; we still build against the macOS 26 SDK.
     swiftLanguageModes: [.v5]
 )

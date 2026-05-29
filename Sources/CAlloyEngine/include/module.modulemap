@@ -1,4 +1,4 @@
 module CAlloyEngine {
-    header "alloy_engine.h"
+    header "alloy_text.h"
     export *
 }
