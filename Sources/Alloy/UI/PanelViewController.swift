@@ -5,7 +5,7 @@ import AppKit
 final class PanelViewController: NSViewController {
     private var session: TerminalSession?
     private let scrollView = NSScrollView()
-    private let headerBar = GlassPanelView(cornerRadius: 0)
+    private let headerBar = GlassPanelView(cornerRadius: 0, clear: true, prominence: .sheet)
     private let titleLabel = NSTextField(labelWithString: "TERMINAL")
 
     override func loadView() {

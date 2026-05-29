@@ -18,14 +18,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             defer: false
         )
         window.title = "Alloy"
-        // Liquid-glass window: transparent, non-opaque chrome so the glass panels
-        // genuinely refract the desktop/content behind them. Content flows under a
-        // transparent titlebar; the traffic lights float top-left (views inset for them).
+        // Keep the app on a cohesive black canvas; the glass reads by refracting
+        // app content instead of whatever wallpaper happens to be behind it.
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = false
         window.isOpaque = false
-        window.backgroundColor = .clear
+        window.backgroundColor = NSColor(hex: 0x050607)
+        window.hasShadow = true
         window.styleMask.insert(.fullSizeContentView)
         window.contentViewController = workbench
         // Setting a contentViewController makes the window adopt the view's fitting
@@ -39,9 +39,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         NSApp.activate(ignoringOtherApps: true)
 
-        // Open this project folder so there's something to look at on first launch.
-        workbench.openFolder(URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
-        workbench.newDocument()
+        openInitialContent()
+
+        // Optional launch hook (used by dev/tests): ALLOY_PANEL selects an activity
+        // panel by index (0 Explorer · 2 Source Control · …).
+        if let raw = ProcessInfo.processInfo.environment["ALLOY_PANEL"], let idx = Int(raw) {
+            workbench.selectPanel(idx)
+        }
+    }
+
+    /// `Alloy [path]` — open a file or folder; otherwise open the current directory.
+    private func openInitialContent() {
+        let fm = FileManager.default
+        let pathArg = CommandLine.arguments.dropFirst().first { !$0.hasPrefix("-") }
+        guard let pathArg else {
+            // From `run.sh`/CLI the working dir is the project; from a Finder /
+            // `open` launch it is "/", so fall back to the home folder there.
+            let cwd = fm.currentDirectoryPath
+            let folder = (cwd == "/") ? NSHomeDirectory() : cwd
+            workbench.openFolder(URL(fileURLWithPath: folder))
+            workbench.newDocument()
+            return
+        }
+        let url = URL(fileURLWithPath: pathArg).standardizedFileURL
+        var isDir: ObjCBool = false
+        if fm.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
+            workbench.openFolder(url)
+            workbench.newDocument()
+        } else {
+            workbench.openFolder(url.deletingLastPathComponent())
+            workbench.openFile(url)
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }

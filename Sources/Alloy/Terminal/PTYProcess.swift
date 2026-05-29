@@ -19,9 +19,9 @@ final class PTYProcess {
     func start(shell: String? = nil, rows: Int, cols: Int) {
         let shellPath = shell ?? ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
 
-        var master: Int32 = -1
-        let childPid = shellPath.withCString { cstr in
-            alloy_pty_spawn(cstr, Int32(rows), Int32(cols), &master)
+        var childPid: pid_t = -1
+        let master = shellPath.withCString { cstr in
+            cpty_spawn(cstr, &childPid, Int32(cols), Int32(rows))
         }
         guard childPid > 0, master >= 0 else { return }
         pid = childPid
@@ -68,7 +68,7 @@ final class PTYProcess {
 
     func resize(rows: Int, cols: Int) {
         guard masterFD >= 0 else { return }
-        alloy_pty_set_size(masterFD, Int32(rows), Int32(cols))
+        _ = cpty_resize(masterFD, Int32(cols), Int32(rows))
     }
 
     func terminate() {

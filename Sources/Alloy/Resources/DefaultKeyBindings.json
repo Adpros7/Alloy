@@ -1,7 +1,7 @@
 [
   { "key": "cmd+n",        "command": "workbench.action.files.newUntitledFile" },
-  { "key": "cmd+o",        "command": "workbench.action.files.openFile" },
-  { "key": "cmd+shift+o",  "command": "workbench.action.files.openFolder" },
+  { "key": "cmd+o",        "command": "workbench.action.files.openFolder" },
+  { "key": "cmd+shift+o",  "command": "workbench.action.files.openFile" },
   { "key": "cmd+s",        "command": "workbench.action.files.save" },
   { "key": "cmd+w",        "command": "workbench.action.closeActiveEditor" },
   { "key": "cmd+b",        "command": "workbench.action.toggleSidebarVisibility" },

@@ -13,6 +13,13 @@ final class EditorPaneViewController: NSViewController {
     var onCursorChange: ((_ line: Int, _ col: Int) -> Void)?
     var onActiveDocumentChange: ((Document?) -> Void)?
 
+    /// The repository for the open folder, if any. Drives gutter change bars.
+    var git: GitService?
+    /// Called after the working tree may have changed (save), so the workbench can
+    /// refresh the Source Control panel and status bar.
+    var onWorkingTreeChange: (() -> Void)?
+    private let gitQueue = DispatchQueue(label: "com.alloy.git.diff")
+
     var activeDocument: Document? {
         guard current >= 0, current < documents.count else { return nil }
         return documents[current]
@@ -86,10 +93,14 @@ final class EditorPaneViewController: NSViewController {
                 guard resp == .OK, let url = panel.url else { return }
                 try? doc.save(to: url)
                 self?.refreshTabs()
+                self?.refreshGitDecorations()
+                self?.onWorkingTreeChange?()
             }
         } else {
             try? doc.save()
             refreshTabs()
+            refreshGitDecorations()
+            onWorkingTreeChange?()
         }
     }
 
@@ -118,9 +129,27 @@ final class EditorPaneViewController: NSViewController {
         view.window?.makeFirstResponder(editorView)
         refreshTabs()
         onActiveDocumentChange?(doc)
+        refreshGitDecorations()
     }
 
     private func refreshTabs() {
         tabBar.setTabs(documents.map { ($0.displayName, $0.isDirty) }, active: current)
+    }
+
+    /// Recompute the gutter change bars for the active document against HEAD.
+    func refreshGitDecorations() {
+        guard let git, let url = activeDocument?.url,
+              let rel = git.relativePath(for: url) else {
+            editorView.gitDiff = [:]
+            return
+        }
+        gitQueue.async { [weak self] in
+            let diff = git.diffLineStatus(relativePath: rel)
+            DispatchQueue.main.async {
+                // Only apply if the same document is still showing.
+                guard let self, self.activeDocument?.url == url else { return }
+                self.editorView.gitDiff = diff
+            }
+        }
     }
 }

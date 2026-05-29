@@ -34,17 +34,18 @@ let package = Package(
         ),
 
         // The native macOS application.
+        //
+        // The canonical implementation lives in Sources/Alloy (the SPM-idiomatic
+        // location): the Workbench, Liquid-Glass chrome, terminal, sidebar and git
+        // integration. (An older parallel scaffold previously lived in ./Alloy and
+        // was what `swift run` mistakenly built — that is why the window came up
+        // blank/grey.)
         .executableTarget(
             name: "Alloy",
             dependencies: ["CAlloyEngine", "CPTY"],
-            path: "Alloy",
-            exclude: [
-                "Core/Bridge",          // provided by CAlloyEngine target
-                "App/Info.plist",
-                "App/Alloy.entitlements",
-            ],
+            path: "Sources/Alloy",
             resources: [
-                .copy("KeyBindings/DefaultKeyBindings.json"),
+                .copy("Resources/DefaultKeyBindings.json"),
             ],
             linkerSettings: [
                 .unsafeFlags([

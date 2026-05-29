@@ -9,6 +9,9 @@ alloy-engine/target/
 # macOS
 .DS_Store
 
+# Generated app bundle (see bundle.sh)
+/Alloy.app/
+
 # Node (extension host, later phases)
 node_modules/
 extension-host/out/

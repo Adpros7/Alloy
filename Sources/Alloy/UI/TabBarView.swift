@@ -1,11 +1,12 @@
 import AppKit
+import QuartzCore
 
 /// Editor tab strip on Liquid Glass. The active tab sits in a glass capsule pill.
 final class TabBarView: NSView {
     var onSelect: ((Int) -> Void)?
     var onClose: ((Int) -> Void)?
 
-    private let panel = GlassPanelView(cornerRadius: 0)
+    private let panel = GlassPanelView(cornerRadius: 0, clear: true, prominence: .sheet)
     private let stack = NSStackView()
 
     init() {
@@ -19,9 +20,9 @@ final class TabBarView: NSView {
             panel.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
         stack.orientation = .horizontal
-        stack.spacing = 6
+        stack.spacing = 8
         stack.alignment = .centerY
-        stack.edgeInsets = NSEdgeInsets(top: 5, left: 8, bottom: 5, right: 8)
+        stack.edgeInsets = NSEdgeInsets(top: 6, left: 8, bottom: 6, right: 8)
         stack.translatesAutoresizingMaskIntoConstraints = false
         panel.body.addSubview(stack)
         NSLayoutConstraint.activate([
@@ -43,28 +44,29 @@ final class TabBarView: NSView {
     }
 }
 
-/// A single tab: a glass pill (when active) behind a filename + close/dirty button.
+/// A single tab: text by default, raised liquid glass only while hovering.
 final class TabItemView: NSView {
     let index: Int
     var onSelect: (() -> Void)?
     var onClose: (() -> Void)?
+    private let hoverPill = Glass.pill(cornerRadius: 13, tint: NSColor.white.withAlphaComponent(0.08))
+    private var trackingArea: NSTrackingArea?
 
     init(index: Int, title: String, dirty: Bool, active: Bool) {
         self.index = index
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
 
-        if active {
-            let pill = Glass.pill(cornerRadius: 9, tint: NSColor.white.withAlphaComponent(0.10))
-            pill.translatesAutoresizingMaskIntoConstraints = false
-            addSubview(pill)
-            NSLayoutConstraint.activate([
-                pill.leadingAnchor.constraint(equalTo: leadingAnchor),
-                pill.trailingAnchor.constraint(equalTo: trailingAnchor),
-                pill.topAnchor.constraint(equalTo: topAnchor),
-                pill.bottomAnchor.constraint(equalTo: bottomAnchor),
-            ])
-        }
+        hoverPill.translatesAutoresizingMaskIntoConstraints = false
+        hoverPill.isHidden = true
+        hoverPill.alphaValue = 0
+        addSubview(hoverPill)
+        NSLayoutConstraint.activate([
+            hoverPill.leadingAnchor.constraint(equalTo: leadingAnchor),
+            hoverPill.trailingAnchor.constraint(equalTo: trailingAnchor),
+            hoverPill.topAnchor.constraint(equalTo: topAnchor),
+            hoverPill.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
 
         let label = NSTextField(labelWithString: title)
         label.font = Theme.uiFont
@@ -81,7 +83,7 @@ final class TabItemView: NSView {
         addSubview(label)
         addSubview(close)
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(equalToConstant: 28),
+            heightAnchor.constraint(equalToConstant: 30),
             widthAnchor.constraint(greaterThanOrEqualToConstant: 120),
             label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
@@ -95,4 +97,40 @@ final class TabItemView: NSView {
 
     override func mouseDown(with event: NSEvent) { onSelect?() }
     @objc private func closeTapped() { onClose?() }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let trackingArea { removeTrackingArea(trackingArea) }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.activeInKeyWindow, .mouseEnteredAndExited, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        setRaised(true)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        setRaised(false)
+    }
+
+    private func setRaised(_ raised: Bool) {
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.12
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            if raised {
+                hoverPill.isHidden = false
+                hoverPill.animator().alphaValue = 1
+            } else {
+                hoverPill.animator().alphaValue = 0
+            }
+        } completionHandler: { [weak self] in
+            if self?.hoverPill.alphaValue == 0 { self?.hoverPill.isHidden = true }
+        }
+    }
 }

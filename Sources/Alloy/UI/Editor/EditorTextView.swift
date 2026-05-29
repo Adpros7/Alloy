@@ -11,6 +11,12 @@ final class EditorTextView: NSView, NSTextInputClient {
     var onCursorChange: ((_ line: Int, _ col: Int) -> Void)?
     var onEdit: (() -> Void)?
 
+    /// Git change markers (0-based line → status), drawn as a colored bar in the
+    /// gutter. Set by the editor pane from `GitService.diffLineStatus`.
+    var gitDiff: [Int: GitLineStatus] = [:] {
+        didSet { needsDisplay = true }
+    }
+
     var document: Document? {
         didSet {
             caret = 0; anchor = 0
@@ -111,6 +117,31 @@ final class EditorTextView: NSView, NSTextInputClient {
         // Gutter background strip.
         Theme.gutterBackground.setFill()
         NSRect(x: 0, y: dirtyRect.minY, width: gutterWidth, height: dirtyRect.height).fill()
+
+        // Git change bars at the right edge of the gutter.
+        if !gitDiff.isEmpty {
+            let barX = gutterWidth - 4
+            for line in firstLine...lastLine {
+                guard let status = gitDiff[line] else { continue }
+                let y = CGFloat(line) * lineHeight
+                switch status {
+                case .added:    Theme.gitAdded.setFill()
+                case .modified: Theme.gitModified.setFill()
+                case .deleted:  Theme.gitDeleted.setFill()
+                }
+                if status == .deleted {
+                    // A small downward wedge at the top of the line marks deleted text.
+                    let tri = NSBezierPath()
+                    tri.move(to: NSPoint(x: barX + 3, y: y))
+                    tri.line(to: NSPoint(x: barX + 3, y: y + 8))
+                    tri.line(to: NSPoint(x: barX - 4, y: y))
+                    tri.close()
+                    tri.fill()
+                } else {
+                    NSRect(x: barX, y: y, width: 3, height: lineHeight).fill()
+                }
+            }
+        }
 
         // Selection.
         if hasSelection {

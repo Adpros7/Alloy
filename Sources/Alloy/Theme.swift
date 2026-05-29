@@ -31,6 +31,15 @@ enum Theme {
     static let tabActiveBorder       = NSColor(hex: 0x528BFF)
     static let divider               = NSColor(hex: 0x181A1F)
 
+    // MARK: Git / Source Control (VS Code default decoration colors)
+    static let gitAdded     = NSColor(hex: 0x587C0C)   // editorGutter.addedBackground
+    static let gitModified  = NSColor(hex: 0x0C7D9D)   // editorGutter.modifiedBackground
+    static let gitDeleted   = NSColor(hex: 0x94151B)   // editorGutter.deletedBackground
+    static let gitAddedFg    = NSColor(hex: 0x81B88B)  // gitDecoration.addedResourceForeground
+    static let gitModifiedFg = NSColor(hex: 0xE2C08D)  // gitDecoration.modifiedResourceForeground
+    static let gitDeletedFg  = NSColor(hex: 0xC74E39)  // gitDecoration.deletedResourceForeground
+    static let gitUntrackedFg = NSColor(hex: 0x73C991) // gitDecoration.untrackedResourceForeground
+
     // MARK: Fonts
     static let editorFontSize: CGFloat = 13
     static var editorFont: NSFont {

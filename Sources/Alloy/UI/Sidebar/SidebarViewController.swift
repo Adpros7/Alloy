@@ -37,9 +37,7 @@ final class FileNode {
     }
 }
 
-/// The Explorer sidebar: a header plus a file tree (NSOutlineView). Lives inside a
-/// vibrant `NSSplitViewItem(sidebarWithViewController:)`, so it gets the system
-/// Liquid Glass sidebar material automatically.
+/// The Explorer sidebar: a header plus a file tree (NSOutlineView).
 final class SidebarViewController: NSViewController, NSOutlineViewDataSource, NSOutlineViewDelegate {
     var onOpenFile: ((URL) -> Void)?
 
@@ -67,7 +65,7 @@ final class SidebarViewController: NSViewController, NSOutlineViewDataSource, NS
         outline.action = #selector(rowClicked)
         outline.focusRingType = .none
         outline.indentationPerLevel = 14
-        outline.selectionHighlightStyle = .regular
+        outline.selectionHighlightStyle = .none
 
         let scroll = NSScrollView()
         scroll.translatesAutoresizingMaskIntoConstraints = false
@@ -124,6 +122,10 @@ final class SidebarViewController: NSViewController, NSOutlineViewDataSource, NS
     }
 
     // MARK: NSOutlineViewDelegate
+
+    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
+        HoverOutlineRowView()
+    }
 
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         guard let node = item as? FileNode else { return nil }
