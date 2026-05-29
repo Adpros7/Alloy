@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:vscode-fast}",
+            "name": "Debug Alloy",
+            "target": "Alloy",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug Alloy"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:vscode-fast}",
+            "name": "Release Alloy",
+            "target": "Alloy",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release Alloy"
+        }
+    ]
+}

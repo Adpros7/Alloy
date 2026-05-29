@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/alloy-text",
+    # Future crates (added in later phases):
+    # "crates/alloy-syntax",
+    # "crates/alloy-search",
+    # "crates/alloy-watch",
+    # "crates/alloy-lsp",
+    # "crates/alloy-dap",
+    # "crates/alloy-git",
+    # "crates/alloy-diagnostics",
+    # "crates/alloy-ffi",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Alloy contributors"]
+
+# Optimize release builds for the editor hot paths.
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"

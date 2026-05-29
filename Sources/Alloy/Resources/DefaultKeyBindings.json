@@ -1,0 +1,23 @@
+[
+  { "key": "cmd+n",        "command": "workbench.action.files.newUntitledFile" },
+  { "key": "cmd+o",        "command": "workbench.action.files.openFile" },
+  { "key": "cmd+shift+o",  "command": "workbench.action.files.openFolder" },
+  { "key": "cmd+s",        "command": "workbench.action.files.save" },
+  { "key": "cmd+w",        "command": "workbench.action.closeActiveEditor" },
+  { "key": "cmd+b",        "command": "workbench.action.toggleSidebarVisibility" },
+  { "key": "cmd+`",        "command": "workbench.action.terminal.toggleTerminal" },
+  { "key": "cmd+shift+p",  "command": "workbench.action.showCommands" },
+  { "key": "cmd+p",        "command": "workbench.action.quickOpen" },
+  { "key": "cmd+shift+f",  "command": "workbench.action.findInFiles" },
+  { "key": "cmd+shift+e",  "command": "workbench.view.explorer" },
+  { "key": "cmd+shift+x",  "command": "workbench.view.extensions" },
+  { "key": "cmd+shift+g",  "command": "workbench.view.scm" },
+  { "key": "cmd+f",        "command": "actions.find",                 "when": "editorFocus" },
+  { "key": "cmd+/",        "command": "editor.action.commentLine",    "when": "editorFocus" },
+  { "key": "cmd+d",        "command": "editor.action.addSelectionToNextFindMatch", "when": "editorFocus" },
+  { "key": "alt+up",       "command": "editor.action.moveLinesUpAction",   "when": "editorFocus" },
+  { "key": "alt+down",     "command": "editor.action.moveLinesDownAction", "when": "editorFocus" },
+  { "key": "cmd+]",        "command": "editor.action.indentLines",    "when": "editorFocus" },
+  { "key": "cmd+[",        "command": "editor.action.outdentLines",   "when": "editorFocus" },
+  { "key": "ctrl+k ctrl+c","command": "editor.action.addCommentLine", "when": "editorFocus" }
+]

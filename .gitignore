@@ -1,0 +1,14 @@
+# Swift / SwiftPM
+.build/
+.swiftpm/
+*.xcodeproj/xcuserdata/
+
+# Rust
+alloy-engine/target/
+
+# macOS
+.DS_Store
+
+# Node (extension host, later phases)
+node_modules/
+extension-host/out/

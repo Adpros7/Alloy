@@ -1,0 +1,15 @@
+[package]
+name = "alloy-text"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# staticlib: linked directly into the Swift binary (no runtime dylib path / rpath
+# headaches during `swift build`/`swift run`). ropey is pure Rust so static linking
+# is clean. We expose a flat C ABI from lib.rs.
+[lib]
+name = "alloy_text"
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+ropey = "1.6"

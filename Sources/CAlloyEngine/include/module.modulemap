@@ -1,0 +1,4 @@
+module CAlloyEngine {
+    header "alloy_engine.h"
+    export *
+}

@@ -1,0 +1,4 @@
+module CPTY {
+    header "cpty.h"
+    export *
+}
